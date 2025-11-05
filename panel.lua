@@ -1,0 +1,748 @@
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
+if type(_G.PaazlisUI)=="table" then
+	return _G.PaazlisUI
+end
+
+local Library={Loaded=false}
+_G.PaazlisUI=Library
+
+local UserInputService,TweenService=game:GetService("UserInputService"),game:GetService("TweenService")
+
+local OFFSET=UDim2.new(0,100,0,50) -- geser 100px kanan, 50px bawah
+
+local baseX,baseY=1366,768
+
+local function KeepInScreen(frame)
+	local screenSize=workspace.CurrentCamera.ViewportSize
+	local frameSize=frame.AbsoluteSize
+
+	-- hitung batas posisi agar Frame tidak keluar layar
+	local maxX=math.max(screenSize.X - frameSize.X, 0)
+	local maxY=math.max(screenSize.Y - frameSize.Y, 0)
+
+	-- clamp posisi agar tidak melebihi batas layar
+	local posX=math.clamp(frame.Position.X.Offset, 0, maxX)
+	local posY=math.clamp(frame.Position.Y.Offset, 0, maxY)
+
+	frame.Position=UDim2.new(0, posX, 0, posY)
+end
+
+local function CreateCanvas(Gui)
+	--[rbxassetid://85429087203738]
+	
+	local Frame=Instance.new("Frame")
+	Frame.Name="Frame"
+	Frame.BackgroundColor3=Color3.fromRGB(17,17,17)
+	Frame.BackgroundTransparency=0
+	Frame.BorderSizePixel=0
+	Frame.Position=UDim2.new(0.1,0,0.38,0)
+	Frame.Size=UDim2.new(0,165,0,34)
+	Frame.Parent=Gui
+	
+	local Title=Instance.new("TextLabel")
+	Title.Name="Title"
+	Title.BackgroundTransparency=1
+	Title.BorderSizePixel=0
+	Title.Position=UDim2.new(0,0,0,0)
+	Title.Size=UDim2.new(1,0,1,0)
+	Title.TextSize=18
+	Title.Font=Enum.Font.SourceSansBold
+	Title.TextColor3=Color3.fromRGB(248,248,248)
+	Title.Text="Title Here"
+	Title.Parent=Frame
+
+	local Open=Instance.new("TextButton")
+	Open.Name="Open"
+	Open.BackgroundTransparency=1
+	Open.Position=UDim2.new(0.85,0,0.05,0)
+	Open.BorderSizePixel=0
+	Open.Size=UDim2.new(0.15,0,0.8,0)
+	Open.TextSize=18
+	Open.Font=Enum.Font.SourceSansBold
+	Open.TextColor3=Color3.fromRGB(248,248,248)
+	Open.Text="v"
+	Open.Parent=Frame
+
+	local Container=Instance.new("ScrollingFrame")
+	Container.Name="Container"
+	Container.BackgroundColor3=Color3.fromRGB(33,33,33)
+	Container.BackgroundTransparency=0
+	Container.BorderSizePixel=0
+	Container.Position=UDim2.new(0,0,1,0)
+	Container.Size=UDim2.new(1,0,0,200)
+	Container.BorderSizePixel=0
+	Container.CanvasSize=UDim2.new(0,0,0,0)
+	Container.ScrollBarThickness=0
+	Container.ScrollingDirection=Enum.ScrollingDirection.Y
+	Container.Selectable=false
+	Container.AutomaticCanvasSize=Enum.AutomaticSize.Y
+	Container.Parent=Frame
+
+	local UIListLayout=Instance.new("UIListLayout")
+	UIListLayout.SortOrder=Enum.SortOrder.LayoutOrder
+	UIListLayout.Parent=Container
+
+	local UIPadding=Instance.new("UIPadding")
+	UIPadding.PaddingBottom=UDim.new(0,5)
+	UIPadding.PaddingLeft=UDim.new(0,5)
+	UIPadding.PaddingRight=UDim.new(0,5)
+	UIPadding.PaddingTop=UDim.new(0,5)
+	UIPadding.Parent=Container
+	
+	
+	---- TextButton, TextLabel, TextBox
+	local Template=Instance.new("Frame")
+	Template.Name="Template"
+	Template.BackgroundColor3=Color3.fromRGB(59,59,59)
+	Template.BackgroundTransparency=1
+	Template.BorderSizePixel=0
+	Template.Position=UDim2.new(0,0,0,0)
+	Template.Size=UDim2.new(1,0,0,30)
+	Template.Parent=Container
+	
+	local TextButton=Instance.new("TextButton")
+	TextButton.Name="TextButton"
+	TextButton.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextButton.BackgroundTransparency=0
+	TextButton.BorderSizePixel=0
+	TextButton.Position=UDim2.new(0.061,0,0.123,0)
+	TextButton.Size=UDim2.new(0.879,0,0.753,0)
+	TextButton.Text="Text Here"
+	TextButton.Font=Enum.Font.SourceSansBold
+	TextButton.TextStrokeTransparency=1
+	TextButton.TextTransparency=0
+	TextButton.TextColor3=Color3.fromRGB(248,248,248)
+	TextButton.TextSize=18
+	TextButton.Parent=Template
+
+	local TextBox=Instance.new("TextBox")
+	TextBox.Name="TextBox"
+	TextBox.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextBox.BackgroundTransparency=0
+	TextBox.BorderSizePixel=0
+	TextBox.Position=UDim2.new(0.061,0,0.123,0)
+	TextBox.Size=UDim2.new(0.879,0,0.753,0)
+	TextBox.PlaceholderText="Text Here"
+	TextBox.Font=Enum.Font.SourceSansBold
+	TextBox.TextStrokeTransparency=1
+	TextBox.TextTransparency=0
+	TextBox.PlaceholderColor3=Color3.fromRGB(248,248,248)
+	TextBox.TextColor3=Color3.fromRGB(248,248,248)
+	TextBox.TextSize=18
+	TextBox.Parent=Template
+
+	local TextLabel=Instance.new("TextLabel")
+	TextLabel.Name="TextLabel"
+	TextLabel.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextLabel.BackgroundTransparency=1
+	TextLabel.BorderSizePixel=0
+	TextLabel.Position=UDim2.new(0,0,0,0)
+	TextLabel.Size=UDim2.new(1,0,1,0)
+	TextLabel.Text="Text Here"
+	TextLabel.Font=Enum.Font.SourceSansBold
+	TextLabel.TextStrokeTransparency=1
+	TextLabel.TextTransparency=0
+	TextLabel.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel.TextSize=18
+	TextLabel.Parent=Template
+	
+	Template.Parent=nil
+	
+	---- TOggle
+	local Toggle=Instance.new("Frame")
+	Toggle.Name="Toggle"
+	Toggle.BackgroundColor3=Color3.fromRGB(33,33,33)
+	Toggle.BackgroundTransparency=0
+	Toggle.BorderSizePixel=0
+	Toggle.Position=UDim2.new(0,0,0,0)
+	Toggle.Size=UDim2.new(1,0,0,30)
+	Toggle.Parent=Container
+
+	local TextLabel2=Instance.new("TextLabel")
+	TextLabel2.Name="TextLabel"
+	TextLabel2.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextLabel2.BackgroundTransparency=1
+	TextLabel2.BorderSizePixel=0
+	TextLabel2.Position=UDim2.new(0.061,0,0.123,0)
+	TextLabel2.Size=UDim2.new(0.7,0,0.753,0)
+	TextLabel2.Text="Text Here"
+	TextLabel2.Font=Enum.Font.SourceSansBold
+	TextLabel2.TextStrokeTransparency=1
+	TextLabel2.TextTransparency=0
+	TextLabel2.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel2.TextScaled=true
+	TextLabel2.Parent=Toggle
+
+	local TextButton2=Instance.new("TextButton")
+	TextButton2.Name="TextButton"
+	TextButton2.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextButton2.BackgroundTransparency=1
+	TextButton2.BorderSizePixel=0
+	TextButton2.AutoButtonColor=false
+	TextButton2.Position=UDim2.new(0.761,0,0.123,0)
+	TextButton2.Size=UDim2.new(0.179,0,0.753,0)
+	TextButton2.Text="□"
+	TextButton2.Font=Enum.Font.SourceSansBold
+	TextButton2.TextStrokeTransparency=1
+	TextButton2.TextTransparency=0
+	TextButton2.TextColor3=Color3.fromRGB(248,248,248)
+	TextButton2.TextScaled=true
+	TextButton2.Parent=Toggle
+	
+	Toggle.Parent=nil
+	
+	-- Selector
+	local Selector=Instance.new("Frame")
+	Selector.Name="Selector"
+	Selector.BackgroundColor3=Color3.fromRGB(59,59,59)
+	Selector.BackgroundTransparency=1
+	Selector.BorderSizePixel=0
+	Selector.Position=UDim2.new(0,0,0,0)
+	Selector.Size=UDim2.new(1,0,0,30)
+	Selector.Parent=Container
+	
+	local TextLabel3=Instance.new("TextLabel")
+	TextLabel3.Name="TextLabel"
+	TextLabel3.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextLabel3.BackgroundTransparency=1
+	TextLabel3.BorderSizePixel=0
+	TextLabel3.Position=UDim2.new(0,0,0,0)
+	TextLabel3.Size=UDim2.new(1,0,1,0)
+	TextLabel3.Text="Option 1"
+	TextLabel3.Font=Enum.Font.SourceSansBold
+	TextLabel3.TextStrokeTransparency=1
+	TextLabel3.TextTransparency=0
+	TextLabel3.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel3.TextSize=18
+	TextLabel3.Parent=Selector
+
+	local Next=Instance.new("TextButton")
+	Next.Name="Next"
+	Next.AutoButtonColor=false
+	Next.BackgroundTransparency=1
+	Next.BorderSizePixel=0
+	Next.Position=UDim2.new(0.806,0,0,0)
+	Next.Size=UDim2.new(0.194,0,1,0)
+	Next.Font=Enum.Font.SourceSansBold
+	Next.TextColor3=Color3.fromRGB(248,248,248)
+	Next.TextTransparency=1
+	Next.Text=""
+	Next.Parent=Selector
+	
+	local TextLabel4=Instance.new("TextLabel")
+	TextLabel4.Name="TextLabel"
+	TextLabel4.AnchorPoint=Vector2.new(0.5,0.5)
+	TextLabel4.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextLabel4.BackgroundTransparency=1
+	TextLabel4.BorderSizePixel=0
+	TextLabel4.Position=UDim2.new(0.5,0,0.5,0)
+	TextLabel4.Size=UDim2.new(1,0,1,0)
+	TextLabel4.Text=">"
+	TextLabel4.Font=Enum.Font.SourceSansBold
+	TextLabel4.TextStrokeTransparency=1
+	TextLabel4.TextTransparency=0
+	TextLabel4.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel4.TextScaled=true
+	TextLabel4.Parent=Next
+	
+	local Previous=Instance.new("TextButton")
+	Previous.Name="Previous"
+	Previous.AutoButtonColor=false
+	Previous.BackgroundTransparency=1
+	Previous.BorderSizePixel=0
+	Previous.Position=UDim2.new(0,0,0,0)
+	Previous.Size=UDim2.new(0.194,0,1,0)
+	Previous.TextScaled=true
+	Previous.Font=Enum.Font.SourceSansBold
+	Previous.TextColor3=Color3.fromRGB(248,248,248)
+	Previous.TextTransparency=1
+	Previous.Text=""
+	Previous.Parent=Selector
+	
+	local TextLabel5=Instance.new("TextLabel")
+	TextLabel5.Name="TextLabel"
+	TextLabel5.AnchorPoint=Vector2.new(0.5,0.5)
+	TextLabel5.BackgroundColor3=Color3.fromRGB(163,162,165)
+	TextLabel5.BackgroundTransparency=1
+	TextLabel5.BorderSizePixel=0
+	TextLabel5.Position=UDim2.new(0.5,0,0.5,0)
+	TextLabel5.Size=UDim2.new(1,0,1,0)
+	TextLabel5.Text="<"
+	TextLabel5.Font=Enum.Font.SourceSansBold
+	TextLabel5.TextStrokeTransparency=1
+	TextLabel5.TextTransparency=0
+	TextLabel5.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel5.TextScaled=true
+	TextLabel5.Parent=Previous
+	
+	Selector.Parent=nil
+
+	return {
+		["Frame"]=Frame,
+		["Title"]=Title,
+		["Open"]=Open,
+		["Container"]=Container,
+		["UIListLayout"]=UIListLayout,
+		["Template"]=Template,
+		["Toggle"]=Toggle,
+		["Selector"]=Selector
+	}
+end
+
+local ParentGui
+
+local IsStudio=game:GetService("RunService"):IsStudio()
+if IsStudio then
+	ParentGui=game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+else
+	ParentGui=game.CoreGui
+end
+
+
+local Gui=ParentGui:FindFirstChildOfClass("PaazlisGui") or Instance.new("ScreenGui")
+Gui.DisplayOrder=1000
+Gui.Name="PaazlisGui"
+Gui.ResetOnSpawn=false
+Gui.AutoLocalize=false
+Gui.ZIndexBehavior=Enum.ZIndexBehavior.Global
+Gui.Parent=ParentGui
+
+
+--CreateCanvas(game.StarterGui)
+local function GrabUI(frame)
+	task.spawn(function()
+		local dragging,dragInput,dragStart,startPos
+		frame.InputBegan:Connect(function(input)
+			if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+				dragging=true dragStart=input.Position startPos=frame.Position
+				input.Changed:Connect(function() if input.UserInputState==Enum.UserInputState.End then dragging=false end end)
+			end
+		end)
+		frame.InputChanged:Connect(function(input)
+			if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then dragInput=input end
+		end)
+		UserInputService.InputChanged:Connect(function(input)
+			if input==dragInput and dragging then
+				local delta=input.Position-dragStart
+				frame.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
+			end
+		end)
+	end)
+end
+
+
+local NameTypes={
+	["Switch"]=true,
+	["TextLabel"]=true,
+	["Button"]=true,
+	["Field"]=true,
+	["TextBox"]=true,
+	["TextButton"]=true,
+	["Selector"]=true,
+	["Toggle"]=true,
+}
+
+local ToggleSysmbols={
+	[true]="■",
+	[false]="□"
+}
+
+local function ResizeUIScale(ui:Instance,screenSize:Vector2)
+	local scaleX=screenSize.X / baseX
+	local scaleY=screenSize.Y / baseY
+	local scale=math.min(scaleX, scaleY)
+	
+	local minAxis=math.min(screenSize.X, screenSize.Y)
+	local isSmallScreen=minAxis <= 500
+	
+	local uiScale=ui:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+	uiScale.Parent=ui
+	
+	local result=1
+	
+	if scale < 1 then
+		result=scale*1.5
+	elseif scale > 1 then
+		result=scale*1
+	else
+		result=1
+	end
+	
+	uiScale.Scale=result
+end
+
+ResizeUIScale(Gui,workspace.CurrentCamera.ViewportSize)
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+	ResizeUIScale(Gui,workspace.CurrentCamera.ViewportSize)
+end)
+
+local LastFrm=nil
+
+local function CreateWindow()
+	local Contexts={}
+	
+	local Window=CreateCanvas(Gui)
+	Window.Order=0
+	Window.Parent=true
+	
+	local Frm=Window.Frame
+	if LastFrm and LastFrm.Position==Frm.Position then
+		LastFrm.Position=Frm.Position+OFFSET
+	end
+
+	LastFrm=Frm
+
+	-- Recalculate the window height
+	function Window:ApplyWindowHeight()
+		local container=self.Container
+		local height=container.UIListLayout.AbsoluteContentSize.Y+container.UIPadding.PaddingTop.Offset+container.UIPadding.PaddingBottom.Offset
+		container.Size=UDim2.new(container.Size.X.Scale,container.Size.X.Offset,0,math.clamp(height,0,300))
+	end
+
+	-- Set the visibility of the window
+	function Window:SetVisible(visible)
+		self.Container.Visible=visible
+		local open=self.Open
+		open.Text=visible and "–" or "v"
+		open.TextSize=visible and 30 or 18
+		self:ApplyWindowHeight()
+	end
+
+	-- Get the visibility of the window
+	function Window:IsVisible()
+		return self.Container.Visible
+	end
+
+	-- Hide the visibility of the window
+	function Window:Hide()
+		self:SetVisible(false)
+	end
+
+	-- Add a context to the window
+	function Window:AddContext(context)
+		context=type(context)=="table" and context or {}
+
+		local typeName,name,callback=context.Type,context.Name,context.Callback
+		local template
+		local cache={}
+	
+		if type(callback)~="function" then
+			callback=function(...)
+				warn("No callback:",...)
+			end
+		end
+
+		local switch,toggle,selector,temp,uiListLayout,container=self.Switch,self.Toggle,self.Selector,self.Template,self.UIListLayout,self.Container
+		if typeName=="Switch" then
+			if switch then
+				template=switch:Clone()
+			end
+		elseif typeName=="Selector" then
+			if selector then
+				template=selector:Clone()
+			end
+		elseif typeName=="Toggle" then
+			if toggle then
+				template=toggle:Clone()
+			end
+		else
+			if temp then
+				template=temp:Clone()
+			end
+		end
+		
+		if not template then
+			return context
+		end
+		
+		template.Name=NameTypes[typeName] and typeName or "Unknown"
+		
+		if not NameTypes[typeName] then
+			if template then
+				template:Destroy()
+			end
+			return context
+		end
+		
+
+		local textLabel:TextLabel=template:FindFirstChild("TextLabel")
+		local textButton:TextButton=template:FindFirstChild("TextButton")
+		local textBox:TextBox=template:FindFirstChild("TextBox")
+		
+		local setCallback,mainThemes,mainKey,mainValue
+		
+		mainThemes={}
+		
+		local function SafeCallback(...)
+			if callback then
+				pcall(callback,...)
+			end
+		end
+		
+		if typeName=="TextLabel" then
+			setCallback=function(value)
+				if mainValue~=value then
+					mainValue=value
+					textLabel.Text=value
+					SafeCallback(value)
+				end
+			end
+			textButton:Destroy() textButton=nil
+			textBox:Destroy() textBox=nil
+			textLabel.Text=context.Name or context.Text or "Text Here"
+			mainValue=textLabel.Text
+		elseif typeName=="TextButton" then
+			textBox:Destroy() textBox=nil
+			textLabel:Destroy() textLabel=nil
+			textButton.Text=context.Name or context.Text or "Text Here"
+			cache.ButtonActivated=textButton.Activated:Connect(function()
+				SafeCallback()
+			end)
+		elseif typeName=="TextBox" then
+			textButton:Destroy() textButton=nil
+			textLabel:Destroy() textLabel=nil
+			textBox.PlaceholderText=context.PlaceholderText or "Text here"
+			textBox.Text=""
+			mainValue=textBox.Text
+			cache.TextFocustLost=textBox.FocusLost:Connect(function(submit)
+				if not submit then return end
+				mainValue=textBox.Text
+				SafeCallback(mainValue)
+			end)
+			cache.TextChanged=textBox:GetPropertyChangedSignal("Text"):Connect(function()
+				if context.Changed then
+					pcall(context.Changed,textBox.Text)
+				end
+			end)
+		elseif typeName=="Toggle" then
+			setCallback=function(value)
+				if mainValue~=value then
+					mainValue=value
+					textButton.Text=ToggleSysmbols[value]
+					SafeCallback(value)
+				end
+			end
+			
+			mainValue=type(context.Value)=="boolean" and context.Value or false
+			textButton.Text=ToggleSysmbols[mainValue]
+			textLabel.Text=context.Name or context.Text or "Text Here"
+			
+			cache.ButtonActivated=textButton.Activated:Connect(function()
+				setCallback(not mainValue)
+			end)
+		elseif typeName=="Selector" then
+			setCallback=function(value,index)
+				if mainValue~=value then
+					mainValue=value
+					textLabel.Text=value
+					if index then mainKey=index end
+					SafeCallback(value,index)
+				end
+			end
+			
+			if type(context.Options)~="table" then
+				context.Options={"Option 1","Option 2"}
+			end
+			
+			mainKey=0
+			local noCap,maxIndex=context.NoCap,0
+			for i,v in ipairs(context.Options) do maxIndex+=1 end
+
+			mainValue=type(context.Value)=="string" and context.Value or context.Options[1]
+			textLabel.Text=tostring(mainValue)
+			
+			local selectorTweenInfo=TweenInfo.new(1,Enum.EasingStyle.Exponential,Enum.EasingDirection.Out)
+			local selectorPropertys1,selectorPropertys2={["Size"]=UDim2.new(0.8,0,0.8,0)},{["Size"]=UDim2.new(1,0,1,0)}
+			
+			local previousButton=template:FindFirstChild("Previous") :: TextButton
+			
+			cache.PreviousActivated=previousButton.Activated:Connect(function()
+				if noCap then
+					if mainKey<=0 then mainKey=1 end
+					mainKey=mainKey<=1 and maxIndex or mainKey-1
+				else
+					mainKey=mainKey<=0 and 1 or mainKey-1
+					if mainKey<=0 then mainKey=1 end
+				end
+				setCallback(tostring(context.Options[mainKey]),mainKey)
+			end)
+
+			local previousLabel=previousButton:FindFirstChild("TextLabel")
+
+			cache.PreviousMouseEnter=previousButton.MouseEnter:Connect(function()
+				TweenService:Create(previousLabel,selectorTweenInfo,selectorPropertys1):Play()
+			end)
+
+			cache.PreviousMouseLeave=previousButton.MouseLeave:Connect(function()
+				TweenService:Create(previousLabel,selectorTweenInfo,selectorPropertys2):Play()
+			end)
+
+			local nextButton=template:FindFirstChild("Next") :: TextButton
+			
+			cache.NextActivated=nextButton.Activated:Connect(function()
+				if mainKey<=0 then mainKey=1 end
+				
+				if mainKey>=maxIndex then
+					mainKey=noCap and 1 or maxIndex
+				else
+					mainKey+=1
+				end
+				
+				setCallback(tostring(context.Options[mainKey]),mainKey)
+			end)
+
+			local nextLabel=nextButton:FindFirstChild("TextLabel")
+
+			cache.NextMouseEnter=nextButton.MouseEnter:Connect(function()
+				TweenService:Create(nextLabel,selectorTweenInfo,selectorPropertys1):Play()
+			end)
+			
+			cache.NextMouseLeave=nextButton.MouseLeave:Connect(function()
+				TweenService:Create(nextLabel,selectorTweenInfo,selectorPropertys2):Play()
+			end)
+		else
+			template:Destroy()
+			template=nil
+			textLabel=nil
+			textButton=nil
+			textBox=nil
+		end
+
+		if template then
+			template.LayoutOrder=self.Order
+			uiListLayout:ApplyLayout()
+			template.Parent=container
+			self.Order=#container:GetChildren()-2
+			context.Template=template
+			context.Parent=true
+		end
+		
+		context.PlaceholderText=nil
+		context.Text=nil
+		context.Name=nil
+		context.Value=nil
+		
+		local funcs={}
+		funcs.Destroy=function(this)
+			context.Parent=nil
+			local k,v=next(cache)
+			while v do
+				cache[k]=nil
+				v:Disconnect()
+				k,v=next(cache)
+			end
+			cache={}
+			template:Destroy()
+			table.clear(this)
+			funcs={}
+			context={}
+		end
+		funcs.Set=function(this,value)
+			local valueType=type(value)
+			if typeName=="TextLabel" and valueType=="string" then
+				setCallback(value)
+			elseif typeName=="TextBox" and valueType=="string" then
+				textBox.PlaceholderText=value
+			elseif typeName=="TextButton" and valueType=="string" then
+				textButton.Text=value
+			elseif typeName=="Toggle" and valueType=="boolean" then
+				setCallback(value)
+			elseif typeName=="Selector" and valueType=="string" then
+				if mainValue~=value then
+					mainValue=value
+					textLabel.Text=value
+					local index=table.find(context.Options,value)
+					if index then mainKey=index end
+					SafeCallback(mainValue,index)
+				end
+			end
+		end
+		
+		local newMetaTable=setmetatable(context,{
+			__index=function(this,key)
+				print(typeName,key)
+				local resolve=funcs[key]
+				if resolve then
+					return function(_,...)
+						return resolve(this,...)
+					end
+				elseif key=="Value" then
+					return mainValue
+				elseif key=="Key" then
+					return mainKey
+				elseif key=="Themes" then
+					return mainThemes
+				else
+					if typeName=="TextLabel" then
+						return textLabel[key]
+					elseif typeName=="TextBox" then
+						return textBox[key]
+					elseif typeName=="TextButton" then
+						return textButton[key]	
+					end
+				end
+				
+				return nil
+			end,
+			__newindex=function(this,key,value)
+				print(typeName,key,value)
+				if key=="Value" then
+					funcs.Set(this,value)
+				elseif key=="Themes" and type(value)=="table" then
+					mainThemes=value
+				else
+					if typeName=="TextLabel" then
+						textLabel[key]=value
+					elseif typeName=="TextBox" then
+						textBox[key]=value
+					elseif typeName=="TextButton" then
+						textButton[key]=value
+					elseif typeName=="Toggle" then
+						textLabel[key]=value
+					end
+				end
+			end,
+		})
+		
+		table.insert(Contexts,newMetaTable)
+		return newMetaTable
+	end
+
+	function Window:SetTitle(text)
+		self.Title.Text=text
+	end
+	
+	-- Destroy a window
+	function Window:Destroy()
+		self.Parent=nil
+		for k,v in ipairs(Contexts) do
+			v:Destroy()
+		end
+		self.Frame:Destroy()
+		table.clear(self)
+	end
+	
+	local frame=Window.Frame
+	GrabUI(Window.Frame)
+	Window:Hide()
+	Window:ApplyWindowHeight()
+	Window.Open.Activated:Connect(function()
+		Window:SetVisible(not Window:IsVisible())
+	end)
+	
+	return Window
+end
+
+do
+	function Library:CreateWindow()
+		return CreateWindow()
+	end
+end
+
+Library.Loaded=true
+Library.Gui=Gui
+
+return Library
