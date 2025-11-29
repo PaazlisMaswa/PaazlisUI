@@ -1,9 +1,10 @@
-if not game:IsLoaded() then
-	game.Loaded:Wait()
-end
+if not game:IsLoaded() then game.Loaded:Wait() end
 
-if type(_G.PaazlisUI)=="table" then
-	return _G.PaazlisUI
+if type(_G.PaazlisUI)=="table" then return _G.PaazlisUI end
+
+if not game:GetService("RunService"):IsClient() then
+	error("PaazlisUI only works on client")
+	return
 end
 
 local Library={Loaded=false}
@@ -35,11 +36,11 @@ local function CreateCanvas(Gui)
 	
 	local Frame=Instance.new("Frame")
 	Frame.Name="Frame"
-	Frame.BackgroundColor3=Color3.fromRGB(17,17,17)
+	Frame.BackgroundColor3=Color3.fromRGB(20,20,20)
 	Frame.BackgroundTransparency=0
 	Frame.BorderSizePixel=0
 	Frame.Position=UDim2.new(0.1,0,0.38,0)
-	Frame.Size=UDim2.new(0,165,0,34)
+	Frame.Size=UDim2.new(0,180,0,34)
 	Frame.Parent=Gui
 	
 	local Title=Instance.new("TextLabel")
@@ -68,7 +69,7 @@ local function CreateCanvas(Gui)
 
 	local Container=Instance.new("ScrollingFrame")
 	Container.Name="Container"
-	Container.BackgroundColor3=Color3.fromRGB(33,33,33)
+	Container.BackgroundColor3=Color3.fromRGB(20,20,20)
 	Container.BackgroundTransparency=0
 	Container.BorderSizePixel=0
 	Container.Position=UDim2.new(0,0,1,0)
@@ -92,11 +93,9 @@ local function CreateCanvas(Gui)
 	UIPadding.PaddingTop=UDim.new(0,5)
 	UIPadding.Parent=Container
 	
-	
-	---- TextButton, TextLabel, TextBox
+	-- TextButton, TextLabel, TextBox
 	local Template=Instance.new("Frame")
 	Template.Name="Template"
-	Template.BackgroundColor3=Color3.fromRGB(59,59,59)
 	Template.BackgroundTransparency=1
 	Template.BorderSizePixel=0
 	Template.Position=UDim2.new(0,0,0,0)
@@ -108,8 +107,8 @@ local function CreateCanvas(Gui)
 	TextButton.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextButton.BackgroundTransparency=0
 	TextButton.BorderSizePixel=0
-	TextButton.Position=UDim2.new(0.061,0,0.123,0)
-	TextButton.Size=UDim2.new(0.879,0,0.753,0)
+	TextButton.Position=UDim2.new(0.049,0,0.123,0)
+	TextButton.Size=UDim2.new(0.9,0,0.753,0)
 	TextButton.Text="Text Here"
 	TextButton.Font=Enum.Font.SourceSansBold
 	TextButton.TextStrokeTransparency=1
@@ -123,8 +122,8 @@ local function CreateCanvas(Gui)
 	TextBox.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextBox.BackgroundTransparency=0
 	TextBox.BorderSizePixel=0
-	TextBox.Position=UDim2.new(0.061,0,0.123,0)
-	TextBox.Size=UDim2.new(0.879,0,0.753,0)
+	TextBox.Position=UDim2.new(0.049,0,0.123,0)
+	TextBox.Size=UDim2.new(0.9,0,0.753,0)
 	TextBox.PlaceholderText="Text Here"
 	TextBox.Font=Enum.Font.SourceSansBold
 	TextBox.TextStrokeTransparency=1
@@ -136,7 +135,6 @@ local function CreateCanvas(Gui)
 
 	local TextLabel=Instance.new("TextLabel")
 	TextLabel.Name="TextLabel"
-	TextLabel.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextLabel.BackgroundTransparency=1
 	TextLabel.BorderSizePixel=0
 	TextLabel.Position=UDim2.new(0,0,0,0)
@@ -151,11 +149,10 @@ local function CreateCanvas(Gui)
 	
 	Template.Parent=nil
 	
-	---- TOggle
+	-- Toggle
 	local Toggle=Instance.new("Frame")
 	Toggle.Name="Toggle"
-	Toggle.BackgroundColor3=Color3.fromRGB(33,33,33)
-	Toggle.BackgroundTransparency=0
+	Toggle.BackgroundTransparency=1
 	Toggle.BorderSizePixel=0
 	Toggle.Position=UDim2.new(0,0,0,0)
 	Toggle.Size=UDim2.new(1,0,0,30)
@@ -163,11 +160,10 @@ local function CreateCanvas(Gui)
 
 	local TextLabel2=Instance.new("TextLabel")
 	TextLabel2.Name="TextLabel"
-	TextLabel2.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextLabel2.BackgroundTransparency=1
 	TextLabel2.BorderSizePixel=0
-	TextLabel2.Position=UDim2.new(0.061,0,0.123,0)
-	TextLabel2.Size=UDim2.new(0.7,0,0.753,0)
+	TextLabel2.Position=UDim2.new(0.049,0,0.123,0)
+	TextLabel2.Size=UDim2.new(0.682,0,0.753,0)
 	TextLabel2.Text="Text Here"
 	TextLabel2.Font=Enum.Font.SourceSansBold
 	TextLabel2.TextStrokeTransparency=1
@@ -178,11 +174,10 @@ local function CreateCanvas(Gui)
 
 	local TextButton2=Instance.new("TextButton")
 	TextButton2.Name="TextButton"
-	TextButton2.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextButton2.BackgroundTransparency=1
 	TextButton2.BorderSizePixel=0
 	TextButton2.AutoButtonColor=false
-	TextButton2.Position=UDim2.new(0.761,0,0.123,0)
+	TextButton2.Position=UDim2.new(0.767,0,0.123,0)
 	TextButton2.Size=UDim2.new(0.179,0,0.753,0)
 	TextButton2.Text="□"
 	TextButton2.Font=Enum.Font.SourceSansBold
@@ -197,7 +192,6 @@ local function CreateCanvas(Gui)
 	-- Selector
 	local Selector=Instance.new("Frame")
 	Selector.Name="Selector"
-	Selector.BackgroundColor3=Color3.fromRGB(59,59,59)
 	Selector.BackgroundTransparency=1
 	Selector.BorderSizePixel=0
 	Selector.Position=UDim2.new(0,0,0,0)
@@ -206,7 +200,6 @@ local function CreateCanvas(Gui)
 	
 	local TextLabel3=Instance.new("TextLabel")
 	TextLabel3.Name="TextLabel"
-	TextLabel3.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextLabel3.BackgroundTransparency=1
 	TextLabel3.BorderSizePixel=0
 	TextLabel3.Position=UDim2.new(0,0,0,0)
@@ -235,7 +228,6 @@ local function CreateCanvas(Gui)
 	local TextLabel4=Instance.new("TextLabel")
 	TextLabel4.Name="TextLabel"
 	TextLabel4.AnchorPoint=Vector2.new(0.5,0.5)
-	TextLabel4.BackgroundColor3=Color3.fromRGB(163,162,165)
 	TextLabel4.BackgroundTransparency=1
 	TextLabel4.BorderSizePixel=0
 	TextLabel4.Position=UDim2.new(0.5,0,0.5,0)
@@ -310,8 +302,6 @@ Gui.AutoLocalize=false
 Gui.ZIndexBehavior=Enum.ZIndexBehavior.Global
 Gui.Parent=ParentGui
 
-
---CreateCanvas(game.StarterGui)
 local function GrabUI(frame)
 	task.spawn(function()
 		local dragging,dragInput,dragStart,startPos
@@ -469,7 +459,7 @@ local function CreateWindow()
 		
 
 		local textLabel:TextLabel=template:FindFirstChild("TextLabel")
-		local textButton:TextButton=template:FindFirstChild("TextButton")
+		local textButton:TextButton=template:FindFirstChild("TextButton") :: TextButton
 		local textBox:TextBox=template:FindFirstChild("TextBox")
 		
 		local setCallback,mainThemes,mainKey,mainValue
@@ -663,7 +653,6 @@ local function CreateWindow()
 		
 		local newMetaTable=setmetatable(context,{
 			__index=function(this,key)
-				print(typeName,key)
 				local resolve=funcs[key]
 				if resolve then
 					return function(_,...)
@@ -688,7 +677,6 @@ local function CreateWindow()
 				return nil
 			end,
 			__newindex=function(this,key,value)
-				print(typeName,key,value)
 				if key=="Value" then
 					funcs.Set(this,value)
 				elseif key=="Themes" and type(value)=="table" then
