@@ -1,8 +1,11 @@
+-- Create by @Paazlis
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if type(_G.PaazlisUI)=="table" then return _G.PaazlisUI end
 
-if not game:GetService("RunService"):IsClient() then
+local RunService=game:GetService("RunService")
+if not RunService:IsClient() then
 	error("PaazlisUI only works on client")
 	return
 end
@@ -10,8 +13,9 @@ end
 local Library={Loaded=false}
 _G.PaazlisUI=Library
 
-local UserInputService,TweenService=game:GetService("UserInputService"),game:GetService("TweenService")
+local Players,UserInputService,TweenService,StarterGui=game:GetService("Players"),game:GetService("UserInputService"),game:GetService("TweenService"),game:GetService("StarterGui")
 
+local Mouse=Players.LocalPlayer:GetMouse()
 local OFFSET=UDim2.new(0,100,0,50) -- geser 100px kanan, 50px bawah
 
 local baseX,baseY=1366,768
@@ -271,7 +275,41 @@ local function CreateCanvas(Gui)
 	TextLabel5.Parent=Previous
 	
 	Selector.Parent=nil
+	
+	
+	-- Select
+	local Select=Instance.new("Frame")
+	Select.Name="Select"
+	Select.BackgroundTransparency=1
+	Select.BorderSizePixel=0
+	Select.Position=UDim2.new(0,0,0,0)
+	Select.Size=UDim2.new(1,0,0,30)
+	Select.Parent=Container
+	
+	local Frame2=Instance.new("Frame")
+	Frame2.Name="Frame"
+	Frame2.BackgroundColor3=Color3.fromRGB(200,200,200)
+	Frame2.BackgroundTransparency=0
+	Frame2.BorderSizePixel=0
+	Frame2.Position=UDim2.new(0.41,0,0.123,0)
+	Frame2.Size=UDim2.new(0.539,0,0.753,0)
+	Frame2.Parent=Select
 
+	local TextButton3=Instance.new("TextButton")
+	TextButton3.Name="TextButton"
+	TextButton3.BackgroundColor3=Color3.fromRGB(0,200,97)
+	TextButton3.BackgroundTransparency=0
+	TextButton3.BorderSizePixel=0
+	TextButton3.Position=UDim2.new(0.049,0,0.123,0)
+	TextButton3.Size=UDim2.new(0.299,0,0.753,0)
+	TextButton3.Font=Enum.Font.SourceSansBold
+	TextButton3.TextScaled=true
+	TextButton3.TextColor3=Color3.fromRGB(248,248,248)
+	TextButton3.Text="Select"
+	TextButton3.Parent=Select
+	
+	Select.Parent=nil
+	
 	return {
 		["Frame"]=Frame,
 		["Title"]=Title,
@@ -280,19 +318,19 @@ local function CreateCanvas(Gui)
 		["UIListLayout"]=UIListLayout,
 		["Template"]=Template,
 		["Toggle"]=Toggle,
-		["Selector"]=Selector
+		["Selector"]=Selector,
+		["Select"]=Select
 	}
 end
 
 local ParentGui
 
-local IsStudio=game:GetService("RunService"):IsStudio()
+local IsStudio=RunService:IsStudio()
 if IsStudio then
 	ParentGui=game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 else
 	ParentGui=game.CoreGui
 end
-
 
 local Gui=ParentGui:FindFirstChildOfClass("PaazlisGui") or Instance.new("ScreenGui")
 Gui.DisplayOrder=1000
@@ -323,7 +361,6 @@ local function GrabUI(frame)
 	end)
 end
 
-
 local NameTypes={
 	["Switch"]=true,
 	["TextLabel"]=true,
@@ -333,11 +370,17 @@ local NameTypes={
 	["TextButton"]=true,
 	["Selector"]=true,
 	["Toggle"]=true,
+	["Select"]=true
 }
 
-local ToggleSysmbols={
+local TurnSysmbols={
 	[true]="■",
 	[false]="□"
+}
+
+local TurnColors={
+	[true]=Color3.fromRGB(0,200,97),
+	[false]=Color3.fromRGB(255,89,89)
 }
 
 local function ResizeUIScale(ui:Instance,screenSize:Vector2)
@@ -416,7 +459,7 @@ local function CreateWindow()
 		context=type(context)=="table" and context or {}
 
 		local typeName,name,callback=context.Type,context.Name,context.Callback
-		local template
+		local template=nil
 		local cache={}
 	
 		if type(callback)~="function" then
@@ -425,7 +468,7 @@ local function CreateWindow()
 			end
 		end
 
-		local switch,toggle,selector,temp,uiListLayout,container=self.Switch,self.Toggle,self.Selector,self.Template,self.UIListLayout,self.Container
+		local switch,toggle,selector,selec,temp,uiListLayout,container=self.Switch,self.Toggle,self.Selector,self.Select,self.Template,self.UIListLayout,self.Container
 		if typeName=="Switch" then
 			if switch then
 				template=switch:Clone()
@@ -438,15 +481,17 @@ local function CreateWindow()
 			if toggle then
 				template=toggle:Clone()
 			end
+		elseif typeName=="Select" then
+			if selec then
+				template=selec:Clone()
+			end
 		else
 			if temp then
 				template=temp:Clone()
 			end
 		end
 		
-		if not template then
-			return context
-		end
+		if not template then return context end
 		
 		template.Name=NameTypes[typeName] and typeName or "Unknown"
 		
@@ -461,8 +506,9 @@ local function CreateWindow()
 		local textLabel:TextLabel=template:FindFirstChild("TextLabel")
 		local textButton:TextButton=template:FindFirstChild("TextButton") :: TextButton
 		local textBox:TextBox=template:FindFirstChild("TextBox")
+		local emptyFrame:Frame=template:FindFirstChild("Frame") :: Frame
 		
-		local setCallback,mainThemes,mainKey,mainValue
+		local setCallback,mainThemes,mainKey,mainValue,mainActive
 		
 		mainThemes={}
 		
@@ -511,13 +557,13 @@ local function CreateWindow()
 			setCallback=function(value)
 				if mainValue~=value then
 					mainValue=value
-					textButton.Text=ToggleSysmbols[value]
+					textButton.Text=TurnSysmbols[value]
 					SafeCallback(value)
 				end
 			end
 			
 			mainValue=type(context.Value)=="boolean" and context.Value or false
-			textButton.Text=ToggleSysmbols[mainValue]
+			textButton.Text=TurnSysmbols[mainValue]
 			textLabel.Text=context.Name or context.Text or "Text Here"
 			
 			cache.ButtonActivated=textButton.Activated:Connect(function()
@@ -593,12 +639,42 @@ local function CreateWindow()
 			cache.NextMouseLeave=nextButton.MouseLeave:Connect(function()
 				TweenService:Create(nextLabel,selectorTweenInfo,selectorPropertys2):Play()
 			end)
+		elseif typeName=="Select" then
+			setCallback=function(value)
+				if mainValue~=value then
+					mainValue=value
+					if type(value)=="table" then
+						emptyFrame.BackgroundColor3=value.Color or Color3.fromRGB(200,200,200)
+					elseif typeof(value)=="Instance" and value:IsA("BasePart") then
+						emptyFrame.BackgroundColor3=value.Color
+					end
+					SafeCallback(value)
+				end
+			end
+			
+			mainValue=context.Value or nil
+			mainActive=type(context.Pressed)=="boolean" and context.Pressed or false
+			textButton.BackgroundColor3=TurnColors[not mainActive]
+
+			cache.ButtonActivated=textButton.Activated:Connect(function()
+				if cache.SelectMouseClick then cache.SelectMouseClick:Disconnect() cache.SelectMouseClick=nil end
+				mainActive=not mainActive
+				textButton.BackgroundColor3=TurnColors[not mainActive]
+				if mainActive then
+					cache.SelectMouseClick=Mouse.Button1Down:Connect(function()
+						local target=Mouse.Target
+						if not (target and target.Parent) then return end
+						setCallback(target)
+					end)
+				end
+			end)
 		else
 			template:Destroy()
 			template=nil
 			textLabel=nil
 			textButton=nil
 			textBox=nil
+			emptyFrame=nil
 		end
 
 		if template then
@@ -610,6 +686,7 @@ local function CreateWindow()
 			context.Parent=true
 		end
 		
+		context.Pressed=nil
 		context.PlaceholderText=nil
 		context.Text=nil
 		context.Name=nil
@@ -648,6 +725,8 @@ local function CreateWindow()
 					if index then mainKey=index end
 					SafeCallback(mainValue,index)
 				end
+			elseif typeName=="Select" then
+				setCallback(value)
 			end
 		end
 		
@@ -660,6 +739,8 @@ local function CreateWindow()
 					end
 				elseif key=="Value" then
 					return mainValue
+				elseif key=="Pressed" then
+					return mainActive
 				elseif key=="Key" then
 					return mainKey
 				elseif key=="Themes" then
@@ -669,8 +750,8 @@ local function CreateWindow()
 						return textLabel[key]
 					elseif typeName=="TextBox" then
 						return textBox[key]
-					elseif typeName=="TextButton" then
-						return textButton[key]	
+					elseif typeName=="TextButton" or typeName=="Select" then
+						return textButton[key]
 					end
 				end
 				
@@ -686,7 +767,7 @@ local function CreateWindow()
 						textLabel[key]=value
 					elseif typeName=="TextBox" then
 						textBox[key]=value
-					elseif typeName=="TextButton" then
+					elseif typeName=="TextButton" or typeName=="Select" then
 						textButton[key]=value
 					elseif typeName=="Toggle" then
 						textLabel[key]=value
@@ -727,6 +808,14 @@ end
 do
 	function Library:CreateWindow()
 		return CreateWindow()
+	end
+	
+	function Library:Notify(title,description,duration)
+		StarterGui:SetCore("SendNotification",{
+			Title=title,
+			Text=description,
+			Duration=type(duration)=="number" and duration or 5
+		})
 	end
 end
 
