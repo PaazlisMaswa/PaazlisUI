@@ -1,4 +1,5 @@
 -- Create by @Paazlis
+-- Version: 1.1
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -15,32 +16,16 @@ _G.PaazlisUI=Library
 
 local Players,UserInputService,TweenService,StarterGui=game:GetService("Players"),game:GetService("UserInputService"),game:GetService("TweenService"),game:GetService("StarterGui")
 
-local Mouse=Players.LocalPlayer:GetMouse()
+local LocalPlayer=Players.LocalPlayer
+local Mouse=LocalPlayer:GetMouse()
 local OFFSET=UDim2.new(0,100,0,50) -- geser 100px kanan, 50px bawah
 
 local baseX,baseY=1366,768
 
-local function KeepInScreen(frame)
-	local screenSize=workspace.CurrentCamera.ViewportSize
-	local frameSize=frame.AbsoluteSize
-
-	-- hitung batas posisi agar Frame tidak keluar layar
-	local maxX=math.max(screenSize.X - frameSize.X, 0)
-	local maxY=math.max(screenSize.Y - frameSize.Y, 0)
-
-	-- clamp posisi agar tidak melebihi batas layar
-	local posX=math.clamp(frame.Position.X.Offset, 0, maxX)
-	local posY=math.clamp(frame.Position.Y.Offset, 0, maxY)
-
-	frame.Position=UDim2.new(0, posX, 0, posY)
-end
-
 local function CreateCanvas(Gui)
-	--[rbxassetid://85429087203738]
-	
 	local Frame=Instance.new("Frame")
 	Frame.Name="Frame"
-	Frame.BackgroundColor3=Color3.fromRGB(20,20,20)
+	Frame.BackgroundColor3=Color3.fromRGB(57,59,61)
 	Frame.BackgroundTransparency=0
 	Frame.BorderSizePixel=0
 	Frame.Position=UDim2.new(0.1,0,0.38,0)
@@ -73,7 +58,7 @@ local function CreateCanvas(Gui)
 
 	local Container=Instance.new("ScrollingFrame")
 	Container.Name="Container"
-	Container.BackgroundColor3=Color3.fromRGB(20,20,20)
+	Container.BackgroundColor3=Color3.fromRGB(57,59,61)
 	Container.BackgroundTransparency=0
 	Container.BorderSizePixel=0
 	Container.Position=UDim2.new(0,0,1,0)
@@ -310,6 +295,46 @@ local function CreateCanvas(Gui)
 	
 	Select.Parent=nil
 	
+	
+	-- Dropdown
+	local Dropdown=Instance.new("Frame")
+	Dropdown.Name="Dropdown"
+	Dropdown.BackgroundTransparency=1
+	Dropdown.BorderSizePixel=0
+	Dropdown.Position=UDim2.new(0,0,0,0)
+	Dropdown.Size=UDim2.new(1,0,0,30)
+	Dropdown.BackgroundColor3=Color3.fromRGB(0,138,207)
+	Dropdown.Parent=Container
+
+	local TextLabel6=Instance.new("TextLabel")
+	TextLabel6.Name="TextLabel"
+	TextLabel6.BackgroundTransparency=1
+	TextLabel6.BorderSizePixel=0
+	TextLabel6.Position=UDim2.new(0.049,0,0,0)
+	TextLabel6.Size=UDim2.new(0.757,0,1,0)
+	TextLabel6.Text="Dropdown"
+	TextLabel6.Font=Enum.Font.SourceSansBold
+	TextLabel6.TextStrokeTransparency=1
+	TextLabel6.TextTransparency=0
+	TextLabel6.TextColor3=Color3.fromRGB(248,248,248)
+	TextLabel6.TextSize=18
+	TextLabel6.Parent=Dropdown
+
+	local TextButton4=Instance.new("TextButton")
+	TextButton4.Name="TextButton"
+	TextButton4.AutoButtonColor=false
+	TextButton4.BackgroundTransparency=1
+	TextButton4.BorderSizePixel=0
+	TextButton4.Position=UDim2.new(0.806,0,0,0)
+	TextButton4.Size=UDim2.new(0.194,0,1,0)
+	TextButton4.Font=Enum.Font.SourceSansBold
+	TextButton4.TextColor3=Color3.fromRGB(248,248,248)
+	TextButton4.TextTransparency=1
+	TextButton4.Text=""
+	TextButton4.Parent=Dropdown
+
+	Dropdown.Parent=nil
+	
 	return {
 		["Frame"]=Frame,
 		["Title"]=Title,
@@ -319,20 +344,25 @@ local function CreateCanvas(Gui)
 		["Template"]=Template,
 		["Toggle"]=Toggle,
 		["Selector"]=Selector,
-		["Select"]=Select
+		["Select"]=Select,
+		["Dropdown"]=Dropdown
 	}
 end
 
-local ParentGui
+local ParentGui=nil
 
 local IsStudio=RunService:IsStudio()
 if IsStudio then
-	ParentGui=game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-else
+	ParentGui=LocalPlayer:WaitForChild("PlayerGui")
+elseif Players.Name==Players.ClassName then
 	ParentGui=game.CoreGui
+else
+	for i,v in ipairs(LocalPlayer:GetChildren()) do if v.ClassName=="PlayerGui" then ParentGui=v break end end
+	if not ParentGui then error("Fatal Error UI") end
 end
 
-local Gui=ParentGui:FindFirstChildOfClass("PaazlisGui") or Instance.new("ScreenGui")
+local Gui=ParentGui:FindFirstChild("PaazlisGui")
+if not Gui then Gui=Instance.new("ScreenGui") end
 Gui.DisplayOrder=1000
 Gui.Name="PaazlisGui"
 Gui.ResetOnSpawn=false
@@ -370,7 +400,8 @@ local NameTypes={
 	["TextButton"]=true,
 	["Selector"]=true,
 	["Toggle"]=true,
-	["Select"]=true
+	["Select"]=true,
+	["Dropdown"]=true,
 }
 
 local TurnSysmbols={
@@ -468,7 +499,7 @@ local function CreateWindow()
 			end
 		end
 
-		local switch,toggle,selector,selec,temp,uiListLayout,container=self.Switch,self.Toggle,self.Selector,self.Select,self.Template,self.UIListLayout,self.Container
+		local switch,toggle,selector,selec,dropDown,temp,uiListLayout,container=self.Switch,self.Toggle,self.Selector,self.Select,self.Dropdown,self.Template,self.UIListLayout,self.Container
 		if typeName=="Switch" then
 			if switch then
 				template=switch:Clone()
@@ -484,6 +515,10 @@ local function CreateWindow()
 		elseif typeName=="Select" then
 			if selec then
 				template=selec:Clone()
+			end
+		elseif typeName=="Dropdown" then
+			if dropDown then
+				template=dropDown:Clone()
 			end
 		else
 			if temp then
@@ -667,6 +702,13 @@ local function CreateWindow()
 						setCallback(target)
 					end)
 				end
+			end)
+		elseif typeName=="Dropdown" then
+			mainActive=false
+			
+			cache.ButtonActivated=textButton.Activated:Connect(function()
+				mainActive=not mainActive
+				textButton.Text=mainActive and "v" or "–"
 			end)
 		else
 			template:Destroy()
